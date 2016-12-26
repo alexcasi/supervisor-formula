@@ -2,30 +2,19 @@
 # vim: ft=jinja
 
 {## Start with  defaults from defaults.sls ##}
-{% import_yaml 'supervisor/defaults.yaml' as default_settings %}
+{% import_yaml 'supervisor/defaults.yaml' as defaults %}
+{% import_yaml 'supervisor/osmap.yaml' as osmap %}
 
-{##
-Setup variable using grains['os_family'] based logic, only add key:values here
-that differ from whats in defaults.yaml
-##}
-{% set os_family_map = salt['grains.filter_by']({
-        'Debian': {
-            "pkg" : 'supervisor',
-        },
-        'Suse'  : {},
-        'Arch'  : {},
-        'RedHat': {},
-  }
-  , grain="os_family"
-  , merge=salt['pillar.get']('supervisor:lookup'))
-%}
-{## Merge the flavor_map to the default settings ##}
-{% do default_settings.supervisor.update(os_family_map) %}
+{# get the settings for the os_family grain #}
+{% set osfam = salt['grains.filter_by'](osmap) or {} %}
 
-{## Merge in supervisor:lookup pillar ##}
-{% set supervisor = salt['pillar.get'](
-        'supervisor',
-        default=default_settings.supervisor,
-        merge=True
-    )
-%}
+{# merge the os family/codename specific data over the defaults #}
+{% do defaults.cas.update(osfam) %}
+
+{# merge the pillar:lookup dict into the defaults/os specific dict #}
+{% set lookup = salt['pillar.get']('supervisor:lookup',
+                                   default=defaults.supervisor,
+                                   merge=True) %}
+
+{# merge the actual supervisor pillar into the above combined dict #}
+{% set supervisor = salt['pillar.get']('supervisor', default=lookup, merge=True) %}

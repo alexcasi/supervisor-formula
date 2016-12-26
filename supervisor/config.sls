@@ -9,8 +9,8 @@ supervisor-config:
     - source: salt://supervisor/templates/supervisord.conf.tmpl
     - template: jinja
     - mode: 644
-    - user: root
-    - group: root
+    - user: {{ supervisor.user }}
+    - group: {{ supervisor.group }}
     - require_in:
       - service: supervisor.service
     - watch_in:
@@ -24,8 +24,8 @@ supervisor-program-{{ program }}:
     - source: salt://supervisor/templates/program.conf.tmpl
     - template: jinja
     - mode: 644
-    - user: root
-    - group: root
+    - user: {{ supervisor.user }}
+    - group: {{ supervisor.group }}
     - defaults:
         program: {{ program }}
         values: {{ values }}

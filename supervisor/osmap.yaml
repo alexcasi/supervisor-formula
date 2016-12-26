@@ -1,0 +1,12 @@
+FreeBSD:
+  pkg: py27-supervisor
+  config: '/usr/local/etc/supervisord.conf'
+  program_dir: '/usr/local/etc/supervisord.conf.d'
+  group: wheel
+  service:
+    name: supervisord
+  supervisord_conf:
+    unix_http_server:
+      chown: 'root:wheel'
+    include:
+      files: '/usr/local/etc/supervisord.conf.d/*.conf'
